@@ -2,5 +2,10 @@
 'use strict';
 
 module.exports = {
-  name: 'ember-sliding-menu'
+  name: 'ember-sliding-menu',
+  included: function(app) {
+    this._super.included(app);
+
+    app.import(app.bowerDirectory + '/hammerjs/hammer.js');
+  }
 };
