@@ -1,9 +1,18 @@
 import Ember from 'ember';
 
 const {
-  Component
+  Component,
+  inject,
+  get
 } = Ember;
 
 export default Component.extend({
-  classNames: ['background-overlay']
+  slidingMenuService: inject.service(),
+
+  tagName: 'a',
+
+  click() {
+    const slidingMenuService = get(this, 'slidingMenuService');
+    slidingMenuService.toggleMenu();
+  }
 });

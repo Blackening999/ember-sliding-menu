@@ -26,6 +26,7 @@ export default Component.extend({
 
   //Custom sliding menu class
   slidingMenuClass: 'sliding-menu',
+  //Background overlay class
   backgroundOverlayClass: 'background-overlay',
   //Movement instance
   movement: null,
