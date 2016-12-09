@@ -7,12 +7,12 @@ const {
 } = Ember;
 
 export default Component.extend({
-  slidingMenu: inject.service(),
+  slidingMenuService: inject.service(),
 
   tagName: 'a',
 
   progressManager: null,
-  menuProgress: oneWay('slidingMenu.menuProgress'),
+  menuProgress: oneWay('slidingMenuService.menuProgress'),
   speed: 0.04,
   slidingMenu: 'sliding-menu',
   $slidingMenu: null,

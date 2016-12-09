@@ -12,8 +12,8 @@ const {
  */
 export default Component.extend({
   //Menu Progress manager
-  slidingMenu: inject.service(),
-  menuProgress: oneWay('slidingMenu.menuProgress'),
+  slidingMenuService: inject.service(),
+  menuProgress: oneWay('slidingMenuService.menuProgress'),
 
   /**
    * Default options
@@ -61,7 +61,7 @@ export default Component.extend({
 
   deInitElement: function() {
     this.get('hammer').destroy();
-    this.slidingMenu.updateProgress(0);
+    this.slidingMenuService.updateProgress(0);
   }.on('willDestroyElement'),
 
   /**
@@ -144,10 +144,10 @@ export default Component.extend({
 
     if (this.get('slideDirection') === 'toLeft') {
       newProgress = -Math.abs(Math.max((this.width - this.movement.lastX + this.offset) / this.width, -1));
-      if (newProgress >= -1) { this.slidingMenu.updateProgress(newProgress); }
+      if (newProgress >= -1) { this.slidingMenuService.updateProgress(newProgress); }
     } else {
       newProgress = Math.min((this.movement.lastX  + this.offset) / this.width, 1);
-      if (newProgress <= 1) { this.slidingMenu.updateProgress(newProgress); }
+      if (newProgress <= 1) { this.slidingMenuService.updateProgress(newProgress); }
     }
     this.tick = false;
   },

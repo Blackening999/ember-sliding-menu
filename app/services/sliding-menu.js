@@ -1,3 +1,3 @@
-import SlidingMenu from 'ember-sliding-menu/services/sliding-menu';
+import SlidingMenuService from 'ember-sliding-menu/services/sliding-menu-service';
 
-export default SlidingMenu;
+export default SlidingMenuService;

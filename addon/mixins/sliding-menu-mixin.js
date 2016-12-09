@@ -7,7 +7,7 @@ const {
 } = Ember;
 
 export default Ember.Mixin.create({
-  slidingMenu: inject.service(),
+  slidingMenuService: inject.service(),
 
   /**
    * Transition and Close menu
@@ -17,7 +17,7 @@ export default Ember.Mixin.create({
    */
   transitionAndCloseMenu: function() {
     this.transitionToRoute.apply(this, arguments);
-    this.slidingMenu.updateProgress(0);
+    this.slidingMenuService.updateProgress(0);
     $('.sliding-menu').css({ visibility: 'hidden' });
   },
   actions: {
