@@ -26,6 +26,7 @@ export default Component.extend({
 
   //Custom sliding menu class
   slidingElement: 'sliding-menu',
+  backgroundOverlayClass: 'background-overlay',
   //Movement instance
   movement: null,
   //Hammer instance
@@ -52,22 +53,27 @@ export default Component.extend({
     const menuOffset = get(this, 'menuOffset');
     const appElement = document.querySelector(appIdentifier);
     const slidingElement = get(this, 'slidingElement');
+    const backgroundOverlayClass = get(this, 'backgroundOverlayClass');
     const initialWidth = get(this, 'slideDirection') === 'toLeft' ? width : -Math.abs(width);
     const hammer = new Hammer(appElement);
 
     set(this, 'width', width);
 
+    const $slidingComponent = $('.' + get(this, 'slidingMenuClass'));
+    const $backgroundOverlayComponent = $('.' + get(this, 'backgroundOverlayClass'));
+
     this.setProperties({
       hammer,
       screenWidth: get(appElement, 'offsetWidth'),
-      $slidingComponent: $('.' + slidingElement)
+      $slidingComponent: $slidingComponent
     });
 
     //init service
     slidingMenuService.setProperties({
       menuOffset,
-      slidingElement,
       width,
+      slidingComponent: $slidingComponent,
+      backgroundOverlayComponent: $backgroundOverlayComponent,
       slideDirection: get(this, 'slideDirection'),
       elementExist: !!get(this, 'element'),
     });
