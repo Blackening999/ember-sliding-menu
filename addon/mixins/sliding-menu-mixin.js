@@ -10,6 +10,12 @@ const {
 export default Ember.Mixin.create({
   slidingMenuService: inject.service(),
 
+  closeMenu() {
+    const slidingMenuService = get(this, 'slidingMenuService');
+    slidingMenuService.set('menuProgress', 0);
+    // $('.sliding-menu').css({ visibility: 'hidden' });
+  },
+
   /**
    * Transition and Close menu
    * Support transitionFromMenu and works as internal action
@@ -17,11 +23,8 @@ export default Ember.Mixin.create({
    * on logout action
    */
   transitionAndCloseMenu() {
-    const slidingMenuService = get(this, 'slidingMenuService');
-
     this.transitionToRoute.apply(this, arguments);
-    slidingMenuService.updateProgress(0);
-    $('.sliding-menu').css({ visibility: 'hidden' });
+    this.closeMenu();
   },
   actions: {
     /**
@@ -31,6 +34,14 @@ export default Ember.Mixin.create({
      */
     transitionFromMenu() {
       this.transitionAndCloseMenu.apply(this, arguments);
+    },
+
+    /**
+      * Close menu when transitioning by default
+    */
+    didTransition() {
+      this.closeMenu();
+      return true;
     }
   }
 });

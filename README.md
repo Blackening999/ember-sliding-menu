@@ -1,4 +1,12 @@
-# Ember-Sliding-menu
+# ember-sliding-menu
+
+IT'S WIP. If you're seeing this message - wait a few days before it become more stable!
+TODOS:
+1. test
+2. optimise (get rid of jquery - completely)
+3. update readme and make a demo
+4. add option to move content instead of moving menu
+Thanks!
 
 This is convenient component representing the mobile sliding-menu.
 It has some features since it was designed for mobile applications at first:
@@ -20,11 +28,65 @@ It has some features since it was designed for mobile applications at first:
 * `ember install sliding-menu` this repository
 
 ## Usage
-Use the component where you need it
+1. Use the component where you need it
 ```js
-  {{#sliding-menu appIdentifier='.app'}}
+  {{#sliding-menu
+    slideDirection='toRight'
+    appIdentifier='.ember-application'
+    pannableWidth=65
+    menuOffset=25
+  }}
     //... your menu items goes here
   {{/sliding-menu}}
+```
+
+Add some styles (not included intentionally):
+```css
+.sliding-menu {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    -webkit-transform: translateZ(0);
+    -webkit-perspective: 1000;
+    -webkit-backface-visibility: hidden;
+    visibility: hidden;
+    will-change: transform;
+    z-index: 110;
+    border: none;
+    background: #ffffff;
+  }
+```
+
+2. Add optionally a component for handling menu toggling outside
+```js
+  {{#toggle-sliding-menu
+    tagName='button'
+    className='hamburger-menu-holder'
+  }}
+    <span class="hamburger-holder">
+      <span class="hamburger"></span>
+    </span>
+  {{/toggle-sliding-menu}}
+```
+
+3. Add optionally background overlay component.
+It allows you to close menu by clicking outside
+```js
+  {{background-overlay}}
+```
+
+Add some styles (not included intentionally):
+```css
+.background-overlay {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 99;
+    visibility: hidden;
+  }
 ```
 
 That's all. Now everything you need is decorate your menu
