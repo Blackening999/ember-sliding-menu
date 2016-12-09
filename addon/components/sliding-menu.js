@@ -22,10 +22,10 @@ export default Component.extend({
   /**
    * Default options
    */
-  classNameBindings: ['slidingElement'],
+  classNameBindings: ['slidingMenuClass'],
 
   //Custom sliding menu class
-  slidingElement: 'sliding-menu',
+  slidingMenuClass: 'sliding-menu',
   backgroundOverlayClass: 'background-overlay',
   //Movement instance
   movement: null,
@@ -52,7 +52,6 @@ export default Component.extend({
     const width = get(this, 'element.offsetWidth');
     const menuOffset = get(this, 'menuOffset');
     const appElement = document.querySelector(appIdentifier);
-    const slidingElement = get(this, 'slidingElement');
     const backgroundOverlayClass = get(this, 'backgroundOverlayClass');
     const initialWidth = get(this, 'slideDirection') === 'toLeft' ? width : -Math.abs(width);
     const hammer = new Hammer(appElement);
