@@ -4,7 +4,7 @@ const {
   Mixin,
   inject,
   $
-}
+} = Ember;
 
 export default Ember.Mixin.create({
   slidingMenu: inject.service(),
