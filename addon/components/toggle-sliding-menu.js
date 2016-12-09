@@ -6,44 +6,63 @@ const {
   get,
   set,
   $,
-  computed: { oneWay }
+  computed: { alias }
 } = Ember;
 
 export default Component.extend({
   slidingMenuService: inject.service(),
 
   tagName: 'a',
-  menuProgress: oneWay('slidingMenuService.menuProgress'),
-  speed: 0.04,
+  menuProgress: alias('slidingMenuService.menuProgress'),
   slidingMenuClass: 'sliding-menu',
-  $slidingMenu: null,
+
+  speed: 0.04,
+
+  slideDirection: 'toRight',
 
   click() {
     //TODO: go native instead
     const speed = get(this, 'speed');
     const progress = get(this, 'menuProgress');
-    const $slidingMenu = get(this, '$slidingMenu');
+    const $slidingMenu = $('.' + get(this, 'slidingMenuClass'));
+    const slideDirection = get(this, 'slideDirection');
 
-    set(this, '$slidingMenu', $('.' + get(this, 'slidingMenuClass')));
-    set(this, 'speed', progress === -1 ? Math.abs(speed) : -Math.abs(speed));
+    let newSpeed = speed;
+
+    if (progress === -1) {
+      newSpeed = Math.abs(newSpeed);
+    } else if (progress === 1) {
+      newSpeed = -Math.abs(newSpeed);
+    } else if (slideDirection === 'toRight') {
+      newSpeed = Math.abs(newSpeed);
+    } else if (slideDirection === 'toLeft') {
+      newSpeed = -Math.abs(newSpeed);
+    }
+
+    set(this, 'speed', newSpeed);
     $slidingMenu.css({ visibility: 'visible' });
     requestAnimationFrame(this.updateMenuProgress.bind(this));
   },
 
   updateMenuProgress() {
-    const slidingMenuService = get(this, 'slidingMenuService');
     const speed = get(this, 'speed');
     const progress = get(this, 'menuProgress');
-    const $slidingMenu = get(this, '$slidingMenu');
+    const slideDirection = get(this, 'slideDirection');
+    let newProgress = 0;
 
-    let newProgress = Math.min(Math.max(-1, progress + speed), 0);
+    if (slideDirection === 'toLeft') {
+      newProgress = Math.min(Math.max(-1, progress + speed), 0);
+    } else {
+      newProgress = Math.min(Math.max(0, progress + speed), 1);
+    }
 
-    slidingMenuService.updateProgress(newProgress);
+    set(this, 'menuProgress', newProgress);
 
-    if (newProgress !== 0 && newProgress !== -1) {
-      requestAnimationFrame(this.updateMenuProgress.bind(this));
-    } else if (newProgress === 0) {
+    if (newProgress === 0) {
+      const $slidingMenu = $('.' + get(this, 'slidingMenuClass'));
       $slidingMenu.css({ visibility: 'hidden' });
+    } else if (newProgress !== -1 && newProgress !== 1) {
+      requestAnimationFrame(this.updateMenuProgress.bind(this));
     }
   }
 });

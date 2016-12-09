@@ -4,10 +4,11 @@ import Movement from '../utils/movement';
 const {
   Component,
   inject,
-  computed: { oneWay },
+  computed: { alias },
   get,
   set,
-  $
+  $,
+  observer
 } = Ember;
 
 /**
@@ -16,7 +17,7 @@ const {
 export default Component.extend({
   //Menu Progress manager
   slidingMenuService: inject.service(),
-  menuProgress: oneWay('slidingMenuService.menuProgress'),
+  menuProgress: alias('slidingMenuService.menuProgress'),
 
   /**
    * Default options
@@ -33,6 +34,8 @@ export default Component.extend({
   $slidingComponent: '',
   //Default application identifier
   appIdentifier: '.ember-application',
+  //menu offset
+  menuOffset: 0,
   //initial offset
   offset: 0,
   //Slide direction option
@@ -46,6 +49,7 @@ export default Component.extend({
     const slidingMenuService = get(this, 'slidingMenuService');
     const appIdentifier = get(this, 'appIdentifier');
     const width = get(this, 'element.offsetWidth');
+    const menuOffset = get(this, 'menuOffset');
     const appElement = document.querySelector(appIdentifier);
     const slidingElement = get(this, 'slidingElement');
     const initialWidth = get(this, 'slideDirection') === 'toLeft' ? width : -Math.abs(width);
@@ -55,8 +59,17 @@ export default Component.extend({
 
     this.setProperties({
       hammer,
-      screenWidth: get(this, 'appElement.offsetWidth'),
-      $slidingComponent: $('.' + (slidingElement === '' ?  get(this, 'observableElement') : slidingElement))
+      screenWidth: get(appElement, 'offsetWidth'),
+      $slidingComponent: $('.' + slidingElement)
+    });
+
+    //init service
+    slidingMenuService.setProperties({
+      menuOffset,
+      slidingElement,
+      width,
+      slideDirection: get(this, 'slideDirection'),
+      elementExist: !!get(this, 'element'),
     });
 
     get(this, '$slidingComponent').css({ transform: 'translateX(' + initialWidth + 'px)' });
@@ -64,10 +77,8 @@ export default Component.extend({
   },
 
   willDestroyElement() {
-    const slidingMenuService = get(this, 'slidingMenuService');
-
     get(this, 'hammer').destroy();
-    slidingMenuService.updateProgress(0);
+    set(this, 'menuProgress', 0);
   },
 
   /**
@@ -137,34 +148,15 @@ export default Component.extend({
     this.get('hammer').on('panend', this.handlePanEnd.bind(this));
   },
 
-  /**
-   * Rendering observer with constraints
-   */
-   //TODO: refactor
-  animateSliding: function() {
-    var progress = this.get('menuProgress'),
-      translatedProgress = this.get('slideDirection') === 'toLeft' ? progress + 1 : progress - 1;
-
-    if (this.element && this.width) {
-      var translate = translatedProgress * this.width;
-      this.get('$slidingComponent').css({ transform: 'translateX(' + translate + 'px)' });
-      //TODO: for future possible frost glass effect
-//      if (additionalElement) {
-//        additionalElement.css({ transform: 'translateX(' + (-translate - 40) + 'px)' });
-//      }
-    }
-  }.observes('menuProgress'),
-
   updateElementProgress() {
-    const slidingMenuService = get(this, 'slidingMenuService');
     let newProgress = 0;
 
     if (this.get('slideDirection') === 'toLeft') {
       newProgress = -Math.abs(Math.max((this.width - this.movement.lastX + this.offset) / this.width, -1));
-      if (newProgress >= -1) { slidingMenuService.updateProgress(newProgress); }
+      if (newProgress >= -1) { set(this, 'menuProgress', newProgress); }
     } else {
       newProgress = Math.min((this.movement.lastX  + this.offset) / this.width, 1);
-      if (newProgress <= 1) { slidingMenuService.updateProgress(newProgress); }
+      if (newProgress <= 1) { set(this, 'menuProgress', newProgress); }
     }
     this.tick = false;
   },
@@ -172,58 +164,40 @@ export default Component.extend({
   /**
    * Complete exapansion of sliding element
    */
-  completeExpansion(){
-    var progress = this.get('menuProgress'), speed = this.movement.speedX, newProgress = 0,
-      inverseConstraint = 0, reverseConstraint = 0,
-      movementConstraint = false;
+  completeExpansion() {
+    const progress = this.get('menuProgress');
+    const speed = this.movement.speedX;
+    const defaultSpeed = get(this, 'defaultSpeed');
+    let closeConstraint = 0,
+      openConstraint = 0,
+      movementConstraint = false,
+      newProgress = 0;
 
     if (progress === -1 || progress === 0 || progress === 1) {
       return;
     }
 
     if (this.get('slideDirection') === 'toLeft') {
-      inverseConstraint = -1;
-      reverseConstraint = 0;
+      closeConstraint = 0;
+      openConstraint = -1;
       movementConstraint = speed > 0.5 || speed > 0 && speed < 0.5 && progress < -0.5;
     } else {
-      inverseConstraint = 0;
-      reverseConstraint = 1;
-      movementConstraint = speed > -0.5 || speed >= 0.5 && progress > 0.5;
+      closeConstraint = 0;
+      openConstraint = 1;
+      movementConstraint = speed <= -0.5 || progress < 0.5;
     }
 
     if (movementConstraint) {
-      newProgress = Math.max(this.get('menuProgress') - this.get('defaultSpeed'), inverseConstraint);
-      this.set('menuProgress', newProgress);
+      newProgress = Math.max(progress - defaultSpeed, closeConstraint);
     } else {
-      newProgress = Math.min(this.get('menuProgress') + this.get('defaultSpeed'), reverseConstraint);
-      this.set('menuProgress', newProgress);
+      newProgress = Math.min(progress + defaultSpeed, openConstraint);
     }
 
-    if (newProgress > inverseConstraint && newProgress < reverseConstraint) {
+    set(this, 'menuProgress', newProgress);
+
+    if (newProgress > closeConstraint && newProgress < openConstraint) {
       requestAnimationFrame(this.completeExpansion.bind(this));
     }
     if (newProgress === 0) { this.get('$slidingComponent').css({ visibility: 'hidden' }); }
   }
-
-//  TODO: for future possible frost glass effect
-//  $blurredContent: null,
-//  initElement: function() {
-//    this._super();
-//
-//    var element = this, blurredScroll = element.get('$slidingComponent').find('.blurred-scroll');
-//    Ember.run.later(function() {
-//      var contentClone = Ember.$('.screen-content').clone();
-//      blurredScroll.append(contentClone);
-//      contentClone.css({ transform: 'translateX(-40px)' });
-//      element.set('$blurredContent', contentClone);
-//    }, 1000);
-//
-//  }.on('didInsertElement'),
-//
-//  /**
-//   * Rendering observer with constraints
-//   */
-//  animateSliding: function() {
-//    this._super(this.get('$blurredContent'));
-//  }.observes('menuProgress')
 });
