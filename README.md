@@ -2,10 +2,11 @@
 
 IT'S WIP. If you're seeing this message - wait a few days before it become more stable!
 TODOS:
-1. test
-2. optimise (get rid of jquery - completely)
-3. update readme and make a demo
-4. add option to move content instead of moving menu
+- test
+- optimise (get rid of jquery - completely)
+- update readme and make a demo
+- add option to move content instead of moving menu
+- fix toLeft, only toRight is working now
 Thanks!
 
 This is convenient component representing the mobile sliding-menu.
@@ -136,7 +137,7 @@ Add menu item
 
 (The MIT License)
 
-Copyright (c) 2015 Vladimir Katansky
+Copyright (c) 2016 Vladimir Katansky
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in

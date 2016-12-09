@@ -27,7 +27,7 @@ export default Service.extend({
 
   menuProgress: computed({
     set(_, newProgress) {
-      this.didProgressUpdated();
+      this.didProgressUpdated(newProgress);
       return newProgress;
     },
     get() {
@@ -35,8 +35,7 @@ export default Service.extend({
     }
   }),
 
-  didProgressUpdated() {
-    const progress = this.get('menuProgress');
+  didProgressUpdated(progress) {
     const translatedProgress = this.get('slideDirection') === 'toLeft' ? progress + 1 : progress - 1;
     const $slidingComponent = get(this, 'slidingComponent');
     const backgroundOverlayComponent = get(this, 'backgroundOverlayComponent');
