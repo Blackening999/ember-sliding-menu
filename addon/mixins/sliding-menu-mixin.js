@@ -1,6 +1,14 @@
 import Ember from 'ember';
 
+const {
+  Mixin,
+  inject,
+  $
+}
+
 export default Ember.Mixin.create({
+  slidingMenu: inject.service(),
+
   /**
    * Transition and Close menu
    * Support transitionFromMenu and works as internal action
@@ -9,8 +17,8 @@ export default Ember.Mixin.create({
    */
   transitionAndCloseMenu: function() {
     this.transitionToRoute.apply(this, arguments);
-    this.menuProgressService.updateProgress(0);
-    Ember.$('.sliding-menu').css({ visibility: 'hidden' });
+    this.slidingMenu.updateProgress(0);
+    $('.sliding-menu').css({ visibility: 'hidden' });
   },
   actions: {
     /**
@@ -18,7 +26,7 @@ export default Ember.Mixin.create({
      * Useful when you want to transition somewhere by clicking
      * menu item and close menu as well.
      */
-    transitionFromMenu: function() {
+    transitionFromMenu() {
       this.transitionAndCloseMenu.apply(this, arguments);
     }
   }

@@ -1,10 +1,20 @@
 import Ember from 'ember';
 import Movement from '../utils/movement';
 
+const {
+  Component,
+  inject,
+  computed: { oneWay }
+} = Ember;
+
 /**
  * Sliding menu
  */
-export default Ember.Component.extend({
+export default Component.extend({
+  //Menu Progress manager
+  slidingMenu: inject.service(),
+  menuProgress: oneWay('slidingMenu.menuProgress'),
+
   /**
    * Default options
    */
@@ -20,9 +30,6 @@ export default Ember.Component.extend({
   $slidingComponent: '',
   //Default application identifier
   appIdentifier: '.ember-application',
-  //Menu Progress manager
-  menuProgressService: null,
-  menuProgress: Ember.computed.alias('menuProgressService.menuProgress'),
   //initial offset
   offset: 0,
   //Slide direction option
@@ -54,7 +61,7 @@ export default Ember.Component.extend({
 
   deInitElement: function() {
     this.get('hammer').destroy();
-    this.menuProgressService.updateProgress(0);
+    this.slidingMenu.updateProgress(0);
   }.on('willDestroyElement'),
 
   /**
@@ -137,10 +144,10 @@ export default Ember.Component.extend({
 
     if (this.get('slideDirection') === 'toLeft') {
       newProgress = -Math.abs(Math.max((this.width - this.movement.lastX + this.offset) / this.width, -1));
-      if (newProgress >= -1) { this.menuProgressService.updateProgress(newProgress); }
+      if (newProgress >= -1) { this.slidingMenu.updateProgress(newProgress); }
     } else {
       newProgress = Math.min((this.movement.lastX  + this.offset) / this.width, 1);
-      if (newProgress <= 1) { this.menuProgressService.updateProgress(newProgress); }
+      if (newProgress <= 1) { this.slidingMenu.updateProgress(newProgress); }
     }
     this.tick = false;
   },
