@@ -1,7 +1,8 @@
 import Ember from 'ember';
 
 const {
-  Service
+  Service,
+  computed
 } = Ember;
 
 /**
@@ -9,6 +10,9 @@ const {
  * so you can handle menu state from any controller or component
  */
 export default Service.extend({
+
+
+  //TODO: refactor to computed get/set
   menuProgress: 0,
   updateProgress(newProgress) {
     this.set('menuProgress', newProgress);

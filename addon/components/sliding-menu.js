@@ -4,7 +4,10 @@ import Movement from '../utils/movement';
 const {
   Component,
   inject,
-  computed: { oneWay }
+  computed: { oneWay },
+  get,
+  set,
+  $
 } = Ember;
 
 /**
@@ -39,51 +42,63 @@ export default Component.extend({
   //Default animation speed
   defaultSpeed: 0.03,
 
-  initElement: function() {
-    this.width = this.element.offsetWidth;
+  didInsertElement() {
+    const slidingMenuService = get(this, 'slidingMenuService');
+    const appIdentifier = get(this, 'appIdentifier');
+    const width = get(this, 'element.offsetWidth');
+    const appElement = document.querySelector(appIdentifier);
+    const slidingElement = get(this, 'slidingElement');
+    const initialWidth = get(this, 'slideDirection') === 'toLeft' ? width : -Math.abs(width);
+    const hammer = new Hammer(appElement);
 
-    var appElement = document.querySelector(this.get('appIdentifier')),
-      hammer = new Hammer(appElement),
-      slidingElement = this.get('slidingElement'),
-      direction = this.get('slideDirection'),
-      initialWidth = direction === 'toLeft' ? this.width : -Math.abs(this.width);
+    set(this, 'width', width);
 
     this.setProperties({
-      hammer: hammer,
-      screenWidth: appElement.offsetWidth,
-      $slidingComponent: Ember.$('.' + (slidingElement === '' ?  this.get('observableElement') : slidingElement))
+      hammer,
+      screenWidth: get(this, 'appElement.offsetWidth'),
+      $slidingComponent: $('.' + (slidingElement === '' ?  get(this, 'observableElement') : slidingElement))
     });
 
-    this.get('$slidingComponent').css({ transform: 'translateX(' + initialWidth + 'px)' });
-    this.get('hammer').on('panstart', this.handlePanStart.bind(this));
+    get(this, '$slidingComponent').css({ transform: 'translateX(' + initialWidth + 'px)' });
+    get(this, 'hammer').on('panstart', this.handlePanStart.bind(this));
+  },
 
-  }.on('didInsertElement'),
+  willDestroyElement() {
+    const slidingMenuService = get(this, 'slidingMenuService');
 
-  deInitElement: function() {
-    this.get('hammer').destroy();
-    this.slidingMenuService.updateProgress(0);
-  }.on('willDestroyElement'),
+    get(this, 'hammer').destroy();
+    slidingMenuService.updateProgress(0);
+  },
 
   /**
    * Pan start Handler
    * @param event
    */
-  handlePanStart: function(event) {
+  handlePanStart(event) {
     event.preventDefault();
 
-    var movement = new Movement(event), newOffset = 0, progress = this.get('menuProgress');
-    this.movement = movement;
+    const movement = new Movement(event);
+    const progress = get(this, 'menuProgress');
+    const slideDirection = get(this, 'slideDirection');
+    const width = get(this, 'width');
+    const pannableWidth = get(this, 'pannableWidth');
 
-    if (this.get('slideDirection') === 'toLeft') {
-      if (progress === -1 || movement.initX >= this.get('screenWidth') - this.get('pannableWidth')) {
-        newOffset = progress === 0 ? Math.abs(this.width - movement.initX) : movement.initX;
-        this.offset = Math.max(0, newOffset);
+    let newOffset = 0;
+
+    set(this, 'movement', movement);
+
+    if (slideDirection === 'toLeft') {
+      const screenWidth = get(this, 'screenWidth');
+
+      if (progress === -1 || movement.initX >= screenWidth - pannableWidth) {
+        newOffset = progress === 0 ? Math.abs(width - movement.initX) : movement.initX;
+        set(this, 'offset', Math.max(0, newOffset));//TODO: dry
         this.attachHandlers();
       }
-    } else if (this.get('slideDirection') === 'toRight') {
-      if (progress === 1 || movement.initX <= this.get('pannableWidth')) {
+    } else if (slideDirection === 'toRight') {
+      if (progress === 1 || movement.initX <= pannableWidth) {
         newOffset = progress * this.width - movement.initX;
-        this.offset = Math.max(0, newOffset);
+        set(this, 'offset', Math.max(0, newOffset));//TODO: dry
         this.attachHandlers();
       }
     }
@@ -93,7 +108,7 @@ export default Component.extend({
    * Pan move Handler
    * @param event
    */
-  handlePanMove: function(event) {
+  handlePanMove(event) {
     event.preventDefault();
 
     this.movement.push(event);
@@ -107,7 +122,7 @@ export default Component.extend({
    * Pan end Handler
    * @param event
    */
-  handlePanEnd: function(event) {
+  handlePanEnd(event) {
     event.preventDefault();
 
     this.get('hammer').off('panmove', this.handlePanMove);
@@ -116,7 +131,7 @@ export default Component.extend({
     return false;
   },
 
-  attachHandlers: function() {
+  attachHandlers() {
     this.get('$slidingComponent').css({ visibility: 'visible' });
     this.get('hammer').on('panmove', this.handlePanMove.bind(this));
     this.get('hammer').on('panend', this.handlePanEnd.bind(this));
@@ -125,6 +140,7 @@ export default Component.extend({
   /**
    * Rendering observer with constraints
    */
+   //TODO: refactor
   animateSliding: function() {
     var progress = this.get('menuProgress'),
       translatedProgress = this.get('slideDirection') === 'toLeft' ? progress + 1 : progress - 1;
@@ -139,15 +155,16 @@ export default Component.extend({
     }
   }.observes('menuProgress'),
 
-  updateElementProgress: function() {
-    var newProgress = 0;
+  updateElementProgress() {
+    const slidingMenuService = get(this, 'slidingMenuService');
+    let newProgress = 0;
 
     if (this.get('slideDirection') === 'toLeft') {
       newProgress = -Math.abs(Math.max((this.width - this.movement.lastX + this.offset) / this.width, -1));
-      if (newProgress >= -1) { this.slidingMenuService.updateProgress(newProgress); }
+      if (newProgress >= -1) { slidingMenuService.updateProgress(newProgress); }
     } else {
       newProgress = Math.min((this.movement.lastX  + this.offset) / this.width, 1);
-      if (newProgress <= 1) { this.slidingMenuService.updateProgress(newProgress); }
+      if (newProgress <= 1) { slidingMenuService.updateProgress(newProgress); }
     }
     this.tick = false;
   },
@@ -155,7 +172,7 @@ export default Component.extend({
   /**
    * Complete exapansion of sliding element
    */
-  completeExpansion: function(){
+  completeExpansion(){
     var progress = this.get('menuProgress'), speed = this.movement.speedX, newProgress = 0,
       inverseConstraint = 0, reverseConstraint = 0,
       movementConstraint = false;

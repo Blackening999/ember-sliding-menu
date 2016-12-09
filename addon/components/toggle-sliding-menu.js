@@ -3,6 +3,9 @@ import Ember from 'ember';
 const {
   Component,
   inject,
+  get,
+  set,
+  $,
   computed: { oneWay }
 } = Ember;
 
@@ -10,28 +13,37 @@ export default Component.extend({
   slidingMenuService: inject.service(),
 
   tagName: 'a',
-
-  progressManager: null,
   menuProgress: oneWay('slidingMenuService.menuProgress'),
   speed: 0.04,
-  slidingMenu: 'sliding-menu',
+  slidingMenuClass: 'sliding-menu',
   $slidingMenu: null,
 
   click() {
-    this.$slidingMenu = Ember.$('.' + this.get('slidingMenu'));
-    this.speed = this.get('menuProgress') === -1 ? Math.abs(this.get('speed')) : -Math.abs(this.get('speed'));
-    this.$slidingMenu.css({ visibility: 'visible' });
+    //TODO: go native instead
+    const speed = get(this, 'speed');
+    const progress = get(this, 'menuProgress');
+    const $slidingMenu = get(this, '$slidingMenu');
+
+    set(this, '$slidingMenu', $('.' + get(this, 'slidingMenuClass')));
+    set(this, 'speed', progress === -1 ? Math.abs(speed) : -Math.abs(speed));
+    $slidingMenu.css({ visibility: 'visible' });
     requestAnimationFrame(this.updateMenuProgress.bind(this));
   },
 
   updateMenuProgress() {
-    var newProgress = Math.min(Math.max(-1, this.get('menuProgress') + this.speed), 0);
+    const slidingMenuService = get(this, 'slidingMenuService');
+    const speed = get(this, 'speed');
+    const progress = get(this, 'menuProgress');
+    const $slidingMenu = get(this, '$slidingMenu');
 
-    this.progressManager.updateProgress(newProgress);
+    let newProgress = Math.min(Math.max(-1, progress + speed), 0);
+
+    slidingMenuService.updateProgress(newProgress);
+
     if (newProgress !== 0 && newProgress !== -1) {
       requestAnimationFrame(this.updateMenuProgress.bind(this));
     } else if (newProgress === 0) {
-      this.$slidingMenu.css({ visibility: 'hidden' });
+      $slidingMenu.css({ visibility: 'hidden' });
     }
   }
 });
