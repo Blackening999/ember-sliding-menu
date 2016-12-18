@@ -120,7 +120,6 @@ export default Component.extend({
       if (progress === 1 || movement.initX <= pannableWidth) {
         newOffset = progress * this.width - movement.initX;
         set(this, 'offset', Math.max(0, newOffset));//TODO: dry
-        console.log('offset: ' + newOffset);
         this.attachHandlers();
       }
     }
@@ -132,8 +131,6 @@ export default Component.extend({
    */
   handlePanMove(event) {
     event.preventDefault();
-
-    console.log('MOVE!!');
 
     this.movement.push(event);
     if (!this.tick) {
@@ -149,8 +146,6 @@ export default Component.extend({
   handlePanEnd(event) {
     event.preventDefault();
 
-    console.log('END!!');
-
     this.get('hammer').off('panmove', this.handlePanMove);
     this.get('hammer').off('panend', this.handlePanEnd);
     this.completeExpansion();
@@ -159,7 +154,6 @@ export default Component.extend({
 
   attachHandlers() {
     // this.get('$slidingComponent').css({ visibility: 'visible' });
-    console.log('attach handlers');
     this.get('hammer').on('panmove', this.handlePanMove.bind(this));
     this.get('hammer').on('panend', this.handlePanEnd.bind(this));
   },
@@ -172,7 +166,6 @@ export default Component.extend({
       if (newProgress >= -1) { set(this, 'menuProgress', newProgress); }
     } else {
       newProgress = Math.min((this.movement.lastX  + this.offset) / this.width, 1);
-      console.log('newProgress: ' + newProgress);
       if (newProgress <= 1) { set(this, 'menuProgress', newProgress); }
     }
     this.tick = false;
