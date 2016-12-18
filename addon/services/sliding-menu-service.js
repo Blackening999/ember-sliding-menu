@@ -68,7 +68,7 @@ export default Service.extend({
     }
 
     set(this, 'speed', newSpeed);
-    $slidingMenu.css({ visibility: 'visible' });
+    // $slidingMenu.css({ visibility: 'visible' });
     requestAnimationFrame(this.updateMenuProgress.bind(this));
   },
 
@@ -88,7 +88,7 @@ export default Service.extend({
 
     if (newProgress === 0) {
       const $slidingMenu = get(this, 'slidingComponent');
-      $slidingMenu.css({ visibility: 'hidden' });
+      // $slidingMenu.css({ visibility: 'hidden' });
     } else if (newProgress !== -1 && newProgress !== 1) {
       requestAnimationFrame(this.updateMenuProgress.bind(this));
     }

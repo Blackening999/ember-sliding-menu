@@ -22,7 +22,7 @@ export default Component.extend({
   /**
    * Default options
    */
-  classNameBindings: ['slidingMenuClass'],
+  // classNameBindings: ['slidingMenuClass'],
 
   //Custom sliding menu class
   slidingMenuClass: 'sliding-menu',
@@ -36,6 +36,8 @@ export default Component.extend({
   $slidingComponent: '',
   //Default application identifier
   appIdentifier: '.ember-application',
+  //Main content identifier
+  // bodyIdentifier: '.body',//TODO: delete
   //menu offset
   menuOffset: 0,
   //initial offset
@@ -50,16 +52,18 @@ export default Component.extend({
   didInsertElement() {
     const slidingMenuService = get(this, 'slidingMenuService');
     const appIdentifier = get(this, 'appIdentifier');
+    const slidingMenuClass = `.${get(this, 'slidingMenuClass')}`;
     const width = get(this, 'element.offsetWidth');
     const menuOffset = get(this, 'menuOffset');
     const appElement = document.querySelector(appIdentifier);
+    const hammerElement = document.querySelector(slidingMenuClass);
     const backgroundOverlayClass = get(this, 'backgroundOverlayClass');
     const initialWidth = get(this, 'slideDirection') === 'toLeft' ? width : -Math.abs(width);
-    const hammer = new Hammer(appElement);
+    const hammer = new Hammer(hammerElement);
 
     set(this, 'width', width);
 
-    const $slidingComponent = $('.' + get(this, 'slidingMenuClass'));
+    const $slidingComponent = $(slidingMenuClass);
     const $backgroundOverlayComponent = $('.' + get(this, 'backgroundOverlayClass'));
 
     this.setProperties({
@@ -116,6 +120,7 @@ export default Component.extend({
       if (progress === 1 || movement.initX <= pannableWidth) {
         newOffset = progress * this.width - movement.initX;
         set(this, 'offset', Math.max(0, newOffset));//TODO: dry
+        console.log('offset: ' + newOffset);
         this.attachHandlers();
       }
     }
@@ -127,6 +132,8 @@ export default Component.extend({
    */
   handlePanMove(event) {
     event.preventDefault();
+
+    console.log('MOVE!!');
 
     this.movement.push(event);
     if (!this.tick) {
@@ -142,6 +149,8 @@ export default Component.extend({
   handlePanEnd(event) {
     event.preventDefault();
 
+    console.log('END!!');
+
     this.get('hammer').off('panmove', this.handlePanMove);
     this.get('hammer').off('panend', this.handlePanEnd);
     this.completeExpansion();
@@ -149,7 +158,8 @@ export default Component.extend({
   },
 
   attachHandlers() {
-    this.get('$slidingComponent').css({ visibility: 'visible' });
+    // this.get('$slidingComponent').css({ visibility: 'visible' });
+    console.log('attach handlers');
     this.get('hammer').on('panmove', this.handlePanMove.bind(this));
     this.get('hammer').on('panend', this.handlePanEnd.bind(this));
   },
@@ -162,6 +172,7 @@ export default Component.extend({
       if (newProgress >= -1) { set(this, 'menuProgress', newProgress); }
     } else {
       newProgress = Math.min((this.movement.lastX  + this.offset) / this.width, 1);
+      console.log('newProgress: ' + newProgress);
       if (newProgress <= 1) { set(this, 'menuProgress', newProgress); }
     }
     this.tick = false;
@@ -204,6 +215,6 @@ export default Component.extend({
     if (newProgress > closeConstraint && newProgress < openConstraint) {
       requestAnimationFrame(this.completeExpansion.bind(this));
     }
-    if (newProgress === 0) { this.get('$slidingComponent').css({ visibility: 'hidden' }); }
+    // if (newProgress === 0) { this.get('$slidingComponent').css({ visibility: 'hidden' }); }
   }
 });

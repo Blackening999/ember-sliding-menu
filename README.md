@@ -5,7 +5,7 @@ TODOS:
 - test
 - optimise (get rid of jquery - completely)
 - update readme and make a demo
-- add option to move content instead of moving menu
+- add option to move content instead of moving menu(v2)
 - fix toLeft, only toRight is working now
 Thanks!
 
