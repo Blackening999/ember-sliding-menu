@@ -7,8 +7,5 @@ module.exports = {
     this._super.included(app);
 
     app.import(app.bowerDirectory + '/hammerjs/hammer.js');
-  },
-  isDevelopingAddon: function() {
-		return true;
-	}
+  }
 };
